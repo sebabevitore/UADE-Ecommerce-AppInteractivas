@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 
-public class LoginRequest {
-    private String email;
-    private String password;
+public class LoginRequest { //DTO para representar la solicitud de inicio de sesión con email y contraseña
+    private String email; // Email del usuario que intenta iniciar sesión
+    private String password; // Contraseña del usuario que intenta iniciar sesión
     
 }
