@@ -6,12 +6,12 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.uade.ecommerce.model.Categoria;
-import com.uade.ecommerce.repository.ICategoriaRepository;
+import com.uade.ecommerce.repository.CategoriaRepository;
 
 @Service
 public class CategoriaService {
     @Autowired
-    private ICategoriaRepository repo;
+    private CategoriaRepository repo;
 
     public List<Categoria> getCategorias() {
         return repo.findAll();
