@@ -4,6 +4,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.uade.ecommerce.model.Pedido;
 
-public interface IPedidoRepository extends JpaRepository<Pedido, Long>{
+public interface PedidoRepository extends JpaRepository<Pedido, Long>{
     
 }
