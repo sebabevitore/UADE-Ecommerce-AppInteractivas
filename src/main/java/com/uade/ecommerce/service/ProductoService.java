@@ -53,7 +53,6 @@ public class ProductoService {
         if (repo.existsById(id)) {
             repo.deleteById(id);
         } else {
-            // Luego cambiaremos esto por tu ProductoNotFoundException personalizada
             throw new ProductoNotFoundException("No existe el producto con el id: " + id);
         }
     }
@@ -63,7 +62,7 @@ public class ProductoService {
         if (!p.getCategorias().isEmpty()) {
             nombreCat = p.getCategorias().get(0).getNombre();
         }
-        
+
         return ProductoResponse.builder()
                 .id(p.getId_prod())
                 .nombre(p.getNombre())
