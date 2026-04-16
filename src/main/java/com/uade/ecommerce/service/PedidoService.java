@@ -4,12 +4,12 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import com.uade.ecommerce.model.Pedido;
-import com.uade.ecommerce.repository.IPedidoRepository;
+import com.uade.ecommerce.repository.PedidoRepository;
 
 
 public class PedidoService {
     @Autowired
-    private IPedidoRepository repo;
+    private PedidoRepository repo;
 
 
     public List<Pedido> getPedidos() {

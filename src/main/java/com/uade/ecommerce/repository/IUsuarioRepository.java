@@ -3,15 +3,12 @@ package com.uade.ecommerce.repository;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-
+import java.util.Optional;
 import com.uade.ecommerce.model.Usuario;
 
+public interface UsuarioRepository extends JpaRepository<Usuario, Long>{
+        Optional<Usuario> findByEmail(String email);
 
-public interface IUsuarioRepository extends JpaRepository<Usuario, Long> {
+        Boolean existsByEmail(String email);
 
-    // busca un usuario por email para login
-    Optional<Usuario> findByEmail(String email);
-
-    //verifica si ya existe un usuario con ese email para registro
-    Boolean existsByEmail(String email);
 }

@@ -6,12 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.uade.ecommerce.model.Usuario;
-import com.uade.ecommerce.repository.IUsuarioRepository;
+import com.uade.ecommerce.repository.UsuarioRepository;
 
 @Service
 public class UsuarioService {
     @Autowired
-    private IUsuarioRepository repo;
+    private UsuarioRepository repo;
 
 
     public List<Usuario> getUsuarios() {
