@@ -7,6 +7,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -99,6 +100,7 @@ public class SecurityConfig {
 
         http
                 .csrf(csrf -> csrf.disable())
+                
                 .authorizeHttpRequests(auth -> auth
                         // Rutas públicas que no requieren autenticación
                         //el controller /api/auth puede ser solicitado por cualquier usuario
@@ -107,9 +109,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll()
 
                         // Rutas que requieren autenticación para modificar productos
-                        //solo los usuarios autenticados y tenga el rol VENDEDOR pueden crear un producto | cambiado momentaneamente luego arreglar |
+                        //solo los usuarios autenticados y tenga el rol VENDEDOR pueden crear un producto
                         .requestMatchers(HttpMethod.POST, "/api/productos").authenticated()
-                        //solo los usuarios autenticados y tenga el rol VENDEDOR pueden actualizar un producto | cambiado momentaneamente luego arreglar |
+                        //solo los usuarios autenticados y tenga el rol VENDEDOR pueden actualizar un producto
                         .requestMatchers(HttpMethod.PUT, "/api/productos/**").authenticated()
                         //solo los usuarios autenticados y tenga el rol VENDEDOR pueden eliminar un producto
                         .requestMatchers(HttpMethod.DELETE, "/api/productos/**").authenticated()

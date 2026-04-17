@@ -12,8 +12,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.uade.ecommerce.dto.UsuarioRegisterDTO;
-import com.uade.ecommerce.dto.LoginRequestDTO;
+import com.uade.ecommerce.dto.request.LoginRequest;
+import com.uade.ecommerce.dto.request.UsuarioRegisterDTO;
 import com.uade.ecommerce.exception.EmailException;
 import com.uade.ecommerce.model.Role;
 import com.uade.ecommerce.model.Usuario;
@@ -69,7 +69,7 @@ public class AuthenticationService {
                 //      Solo administradores pueden asignar roles especiales (ADMIN, MODERATOR, etc.)
                 //      Esto sigue el principio de "least privilege" (menor nivel de privilegios)
                 .role(Role.USER)
-                .fechaNacimiento(LocalDate.parse(request.getFechaNacimiento()))
+                .fechaNacimiento(request.getFechaNacimiento())
                 .sexo(request.getSexo())
                 // 2.6) Finaliza la construcción y retorna la instancia Usuario 
                 //      con todos los campos configurados y listos para usar
@@ -106,7 +106,7 @@ public class AuthenticationService {
      * @throws NoSuchElementException si no se encuentra el usuario después de la autenticación exitosa
      */
 
-    public String authenticate(LoginRequestDTO request){
+    public String authenticate(LoginRequest request){
 
         // ==================== PASO 1: VALIDACIÓN DE CREDENCIALES ====================
         //esto guarda las credenciales para que las lea el AuthenticationManager

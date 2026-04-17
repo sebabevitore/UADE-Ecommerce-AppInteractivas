@@ -1,4 +1,6 @@
-package com.uade.ecommerce.dto;
+package com.uade.ecommerce.dto.request;
+
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,6 +17,6 @@ public class ProductoRequest { //DTO para representar la solicitud de creación 
     private String nombre; // Nombre del producto que se va a crear o actualizar
     private String descripcion; // Descripción del producto que se va a crear o actualizar
     private double precio; // Precio del producto que se va a crear o actualizar
-    private Long categoriaId; // ID de la categoría a la que pertenece el producto que se va a crear o actualizar (se asume que las categorías ya existen en el sistema)
+    private List<Long> categoriaIds; // ID de la categoría a la que pertenece el producto que se va a crear o actualizar (se asume que las categorías ya existen en el sistema)
 
 }
