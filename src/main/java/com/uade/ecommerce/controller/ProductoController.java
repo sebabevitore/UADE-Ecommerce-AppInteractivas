@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.uade.ecommerce.dto.ProductoRequest;
 import com.uade.ecommerce.dto.ProductoResponse;
-import com.uade.ecommerce.model.Producto;
 import com.uade.ecommerce.service.ProductoService;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;

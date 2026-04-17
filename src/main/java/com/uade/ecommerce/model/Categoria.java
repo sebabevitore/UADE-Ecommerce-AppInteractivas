@@ -2,7 +2,6 @@ package com.uade.ecommerce.model;
 
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
 
 import java.util.ArrayList;
 import java.util.List;
