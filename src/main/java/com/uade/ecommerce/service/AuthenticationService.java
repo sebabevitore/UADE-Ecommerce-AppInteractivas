@@ -69,7 +69,7 @@ public class AuthenticationService {
                 //      Solo administradores pueden asignar roles especiales (ADMIN, MODERATOR, etc.)
                 //      Esto sigue el principio de "least privilege" (menor nivel de privilegios)
                 .role(Role.USER)
-                .fechaNacimiento(LocalDate.parse(request.getFechaNacimiento()))
+                .fechaNacimiento(request.getFechaNacimiento())
                 .sexo(request.getSexo())
                 // 2.6) Finaliza la construcción y retorna la instancia Usuario 
                 //      con todos los campos configurados y listos para usar
