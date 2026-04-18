@@ -18,5 +18,4 @@ public class ProductoRequest { //DTO para representar la solicitud de creación 
     private String descripcion; // Descripción del producto que se va a crear o actualizar
     private double precio; // Precio del producto que se va a crear o actualizar
     private List<Long> categoriaIds;
-    private int stock;
 }
