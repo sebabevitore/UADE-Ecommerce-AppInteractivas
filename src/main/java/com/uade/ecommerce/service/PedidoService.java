@@ -21,6 +21,8 @@ import com.uade.ecommerce.repository.PedidoRepository;
 import com.uade.ecommerce.repository.ProductoRepository;
 import com.uade.ecommerce.repository.UsuarioRepository;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class PedidoService {
 
@@ -49,7 +51,7 @@ public class PedidoService {
 //        repo.save(pedido);
 //        return pedido;
 //    }    
-
+    @Transactional
     public PedidoResponse crearPedido(PedidoRequest request) {
         // 1. Obtenemos el email del usuario logueado desde el contexto de Seguridad
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
