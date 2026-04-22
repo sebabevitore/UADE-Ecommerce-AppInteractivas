@@ -7,6 +7,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import com.uade.ecommerce.model.EstadoPedido;
 
 import com.uade.ecommerce.dto.request.ItemPedidoRequest;
 import com.uade.ecommerce.dto.request.PedidoRequest;
@@ -21,7 +22,6 @@ import com.uade.ecommerce.model.Usuario;
 import com.uade.ecommerce.repository.PedidoRepository;
 import com.uade.ecommerce.repository.ProductoRepository;
 import com.uade.ecommerce.repository.UsuarioRepository;
-
 import jakarta.transaction.Transactional;
 
 @Service
@@ -52,58 +52,58 @@ public class PedidoService {
 //        repo.save(pedido);
 //        return pedido;
 //    }    
-    @Transactional
-    public PedidoResponse crearPedido(PedidoRequest request) {
-        // 1. Obtenemos el email del usuario logueado desde el contexto de Seguridad
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-    
-        Usuario usuario = usuarioRepo.findByEmail(email)
-                .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado"));
+@Transactional
+public PedidoResponse crearPedido(PedidoRequest request) {
+    // 1. Obtenemos el email del usuario logueado desde el contexto de Seguridad
+    String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
+    Usuario usuario = usuarioRepo.findByEmail(email)
+            .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado"));
 
-        // 2. Creamos el objeto Pedido principal
-        Pedido pedido = new Pedido();
-        pedido.setUsuario(usuario);
-        pedido.setFecha(LocalDate.now());
-    
-        // 3. Transformamos cada item del Request en una LineaPedido
-        List<LineaPedido> lineas = new ArrayList<>();
-        double totalPedido = 0;
+    // 2. Creamos el objeto Pedido principal
+    Pedido pedido = new Pedido();
+    pedido.setUsuario(usuario);
+    pedido.setFecha(LocalDate.now());
+    pedido.setEstado(EstadoPedido.PENDIENTE);
 
-        for (ItemPedidoRequest itemReq : request.getItems()) {
-            Producto p = productoRepo.findById(itemReq.getProductoId())
-                    .orElseThrow(() -> new ProductoNotFoundException(itemReq.getProductoId()));
+    // 3. Transformamos cada item del Request en una LineaPedido
+    List<LineaPedido> lineas = new ArrayList<>();
+    double totalPedido = 0;
 
-            LineaPedido linea = new LineaPedido();
-            linea.setProducto(p);
-            linea.setCantidad(itemReq.getCantidad());
-            linea.setPrecioUnitario(p.getPrecio()); // Congelamos el precio actual
-            linea.setPedido(pedido); // Muy importante para vincular la línea al pedido
+    for (ItemPedidoRequest itemReq : request.getItems()) {
+        Producto p = productoRepo.findById(itemReq.getProductoId())
+                .orElseThrow(() -> new ProductoNotFoundException(itemReq.getProductoId()));
 
-            lineas.add(linea);
-            totalPedido += (p.getPrecio() * itemReq.getCantidad());
-        }
+        LineaPedido linea = new LineaPedido();
+        linea.setProducto(p);
+        linea.setCantidad(itemReq.getCantidad());
+        linea.setPrecioUnitario(p.getPrecio());
+        linea.setPedido(pedido);
 
-        // 4. Guardamos todo (CascadeType.ALL en Pedido guardará las líneas automáticamente)
-        pedido.setLineas(lineas);
-        Pedido pedidoGuardado = repo.save(pedido);
+        lineas.add(linea);
+        totalPedido += (p.getPrecio() * itemReq.getCantidad());
+    }
 
-        // 5. Mapeamos a la respuesta que definimos antes
-        List<ItemPedidoResponse> detalles = pedidoGuardado.getLineas().stream().map(l -> 
-            ItemPedidoResponse.builder()
-                .nombreProducto(l.getProducto().getNombre())
-                .cantidad(l.getCantidad())
-                .precioUnitario(l.getPrecioUnitario())
-                .build()
-        ).toList();
+    // 4. Guardamos todo
+    pedido.setLineas(lineas);
+    Pedido pedidoGuardado = repo.save(pedido);
 
-        return PedidoResponse.builder()
-                .id(pedidoGuardado.getId())
-                .fecha(pedidoGuardado.getFecha().atStartOfDay())
-                .total(totalPedido)
-                .estado("PENDIENTE")
-                .detalles(detalles)
-                .build();
+    // 5. Mapeamos a la respuesta
+    List<ItemPedidoResponse> detalles = pedidoGuardado.getLineas().stream().map(l ->
+        ItemPedidoResponse.builder()
+            .nombreProducto(l.getProducto().getNombre())
+            .cantidad(l.getCantidad())
+            .precioUnitario(l.getPrecioUnitario())
+            .build()
+    ).toList();
+
+    return PedidoResponse.builder()
+        .id(pedidoGuardado.getId())
+        .fecha(pedidoGuardado.getFecha().atStartOfDay())
+        .total(totalPedido)
+        .estado(pedidoGuardado.getEstado().name())
+        .detalles(detalles)
+        .build();
     }
 
 
@@ -121,7 +121,7 @@ public class PedidoService {
             .id(pedido.getId())
             .fecha(pedido.getFecha().atStartOfDay())
             .total(pedido.getLineas().stream().mapToDouble(l -> l.getPrecioUnitario() * l.getCantidad()).sum())
-            .estado("PENDIENTE") // O el campo que tengas en la entidad
+            .estado(pedido.getEstado().name())
             .detalles(pedido.getLineas().stream().map(l -> 
                 ItemPedidoResponse.builder()
                     .nombreProducto(l.getProducto().getNombre())

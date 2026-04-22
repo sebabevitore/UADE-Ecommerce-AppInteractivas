@@ -17,6 +17,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 
 @Getter @Setter
 @NoArgsConstructor
@@ -27,6 +29,9 @@ public class Pedido {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private LocalDate fecha;
+    
+    @Enumerated(EnumType.STRING)
+    private EstadoPedido estado;
 
     @ManyToOne 
     @JoinColumn(name = "id_usuario")
