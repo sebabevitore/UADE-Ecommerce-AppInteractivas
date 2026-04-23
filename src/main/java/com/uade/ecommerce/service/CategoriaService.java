@@ -67,8 +67,6 @@ public class CategoriaService {
 
     private CategoriaResponse convertToDTO(Categoria entidad) {
         CategoriaResponse response = new CategoriaResponse();
-        // Ojo acá: usá el nombre exacto de tu atributo en la entidad Categoria
-        // Si lo dejaste como id_categoria, usá ese.
         response.setId(entidad.getId_categoria()); 
         response.setNombre(entidad.getNombre());
         return response;
