@@ -12,6 +12,10 @@ import com.uade.ecommerce.dto.request.ItemPedidoRequest;
 import com.uade.ecommerce.dto.request.PedidoRequest;
 import com.uade.ecommerce.dto.response.CarritoResponse;
 import com.uade.ecommerce.dto.response.ItemCarritoResponse;
+import com.uade.ecommerce.exception.CantidadInvalidaException;
+import com.uade.ecommerce.exception.CarritoNotFoundException;
+import com.uade.ecommerce.exception.CarritoVacioException;
+import com.uade.ecommerce.exception.ItemCarritoNotFoundException;
 import com.uade.ecommerce.exception.ProductoNotFoundException;
 import com.uade.ecommerce.exception.UsuarioNotFoundException;
 import com.uade.ecommerce.model.Carrito;
@@ -53,7 +57,7 @@ public class CarritoService {
         Usuario usuario = getUsuarioAutenticado();
         Carrito carrito = usuario.getCarrito();
         if (carrito == null) {
-            throw new RuntimeException("Carrito no encontrado para el usuario");
+            throw new CarritoNotFoundException("Carrito no encontrado para el usuario");
         }
         return convertToCarritoResponse(carrito);
     }
@@ -64,11 +68,16 @@ public class CarritoService {
     // logica para agregar item al carrito del usuario autenticado
     public CarritoResponse addItemToCart(ItemCarritoRequest request)  {
 
+        // 1. VALIDAR CANTIDAD (Nueva validación)
+        if (request.getCantidad() <= 0) {
+            throw new CantidadInvalidaException("La cantidad a agregar debe ser mayor a 0. Se recibió: " + request.getCantidad());
+        }
+
         //obtener usuario autenticado y su carrito
         Usuario usuario = getUsuarioAutenticado();
         Carrito carrito = usuario.getCarrito();
         if (carrito == null) {
-            throw new RuntimeException("Carrito no encontrado para el usuario");
+            throw new CarritoNotFoundException("Carrito no encontrado para el usuario");
         }
 
         //buscar producto
@@ -119,7 +128,7 @@ public class CarritoService {
         
         // Validar que la cantidad sea mayor a 0
         if (nuevaCantidad <= 0) {
-            throw new IllegalArgumentException("La cantidad debe ser mayor a 0");
+            throw new CantidadInvalidaException("La cantidad debe ser mayor a 0");
         }
 
         // Buscar el item en la BD
@@ -127,7 +136,7 @@ public class CarritoService {
         Usuario usuario = getUsuarioAutenticado();
         Carrito carrito = usuario.getCarrito();
         if (carrito == null) {
-            throw new RuntimeException("Carrito no encontrado para el usuario");
+            throw new CarritoNotFoundException("Carrito no encontrado para el usuario");
         }
 
         for (ItemCarrito it : carrito.getItems()) {
@@ -138,7 +147,7 @@ public class CarritoService {
         }
 
         if (itemEncontrado == null) {
-            throw new RuntimeException("Item no encontrado en el carrito");
+            throw new ItemCarritoNotFoundException(itemId);
         }
 
         itemEncontrado.setCantidad(nuevaCantidad);
@@ -153,13 +162,13 @@ public class CarritoService {
         Usuario usuario = getUsuarioAutenticado();
         Carrito carrito = usuario.getCarrito();
         if (carrito == null) {
-            throw new RuntimeException("Carrito no encontrado para el usuario");
+            throw new CarritoNotFoundException("Carrito no encontrado para el usuario");
         }
 
         ItemCarrito itemAEliminar = carrito.getItems().stream()
                 .filter(item -> item.getId().equals(itemId))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Item no encontrado en el carrito"));
+                .orElseThrow(() -> new ItemCarritoNotFoundException(itemId));
 
         carrito.getItems().remove(itemAEliminar);
         carritoRepo.save(carrito);
@@ -173,7 +182,7 @@ public class CarritoService {
         Usuario usuario = getUsuarioAutenticado();
         Carrito carrito = usuario.getCarrito();
         if (carrito == null) {
-            throw new RuntimeException("Carrito no encontrado para el usuario");
+            throw new CarritoNotFoundException("Carrito no encontrado para el usuario");
         }
 
         carrito.getItems().clear();
@@ -186,11 +195,11 @@ public class CarritoService {
         Usuario usuario = getUsuarioAutenticado();
         Carrito carrito = usuario.getCarrito();
         if (carrito == null) {
-            throw new RuntimeException("Carrito no encontrado para el usuario");
+            throw new CarritoNotFoundException("Carrito no encontrado para el usuario");
         }
 
         if (carrito.getItems().isEmpty()) {
-            throw new IllegalArgumentException("El carrito está vacío, no se puede hacer checkout");
+            throw new CarritoVacioException();
         }
 
 

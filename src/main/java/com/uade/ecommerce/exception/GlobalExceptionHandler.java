@@ -51,4 +51,24 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> manejarUsuarioNoEncontrado(UsuarioNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
+
+    @ExceptionHandler(CarritoNotFoundException.class)
+    public ResponseEntity<String> manejarCarritoNoEncontrado(CarritoNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(ItemCarritoNotFoundException.class)
+    public ResponseEntity<String> manejarItemCarritoNoEncontrado(ItemCarritoNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(CarritoVacioException.class)
+    public ResponseEntity<String> manejarCarritoVacio(CarritoVacioException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(CantidadInvalidaException.class)
+    public ResponseEntity<String> manejarCantidadInvalida(CantidadInvalidaException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
 }
