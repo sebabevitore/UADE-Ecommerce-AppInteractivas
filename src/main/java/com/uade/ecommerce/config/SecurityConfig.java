@@ -109,15 +109,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll()
 
                         // Rutas que requieren autenticación para modificar productos
-                        //solo los usuarios autenticados y tenga el rol VENDEDOR pueden crear un producto
                         .requestMatchers(HttpMethod.POST, "/api/productos").authenticated()
-                        //solo los usuarios autenticados y tenga el rol VENDEDOR pueden actualizar un producto
                         .requestMatchers(HttpMethod.PUT, "/api/productos/**").authenticated()
-                        //solo los usuarios autenticados y tenga el rol VENDEDOR pueden eliminar un producto
                         .requestMatchers(HttpMethod.DELETE, "/api/productos/**").authenticated()
 
                         // Rutas exclusivas para administradores
-                        //verifica que el usuario esté autenticado y tenga el rol ADMIN
+                        // verifica que el usuario esté autenticado y tenga el rol ADMIN
                         .requestMatchers("/api/admin/**").hasRole(Role.ADMIN.name())
 
                         // Rutas de pedidos solo para usuarios autenticados

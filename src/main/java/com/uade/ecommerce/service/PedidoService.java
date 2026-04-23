@@ -86,6 +86,7 @@ public PedidoResponse crearPedido(PedidoRequest request) {
 
     // 4. Guardamos todo
     pedido.setLineas(lineas);
+    pedido.setPrecioTotal(totalPedido);
     Pedido pedidoGuardado = repo.save(pedido);
 
     // 5. Mapeamos a la respuesta

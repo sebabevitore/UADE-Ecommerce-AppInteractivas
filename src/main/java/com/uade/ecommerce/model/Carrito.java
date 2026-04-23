@@ -33,7 +33,7 @@ public class Carrito {
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
 
-    @OneToMany(mappedBy = "carrito", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "carrito", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemCarrito> items = new ArrayList<>();
 
 
