@@ -8,6 +8,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.uade.ecommerce.dto.request.ItemCarritoRequest;
+import com.uade.ecommerce.dto.request.ItemPedidoRequest;
+import com.uade.ecommerce.dto.request.PedidoRequest;
 import com.uade.ecommerce.dto.response.CarritoResponse;
 import com.uade.ecommerce.dto.response.ItemCarritoResponse;
 import com.uade.ecommerce.exception.ProductoNotFoundException;
@@ -35,6 +37,8 @@ public class CarritoService {
     private UsuarioRepository usuarioRepo;
     @Autowired
     private PedidoRepository pedidoRepo;
+    @Autowired
+    private PedidoService pedidoService;
 
     // Obtener usuario autenticado desde el contexto de seguridad
     private Usuario getUsuarioAutenticado() {
@@ -189,24 +193,20 @@ public class CarritoService {
             throw new IllegalArgumentException("El carrito está vacío, no se puede hacer checkout");
         }
 
-        // Crear pedido
-        Pedido pedido = new Pedido();
-        pedido.setUsuario(usuario);
-        pedido.setFecha(LocalDate.now());
 
-        // Convertir items del carrito a líneas de pedido
-        List<LineaPedido> lineas = new ArrayList<>();
-        for (ItemCarrito itemCarrito : carrito.getItems()) {
-            LineaPedido linea = new LineaPedido();
-            linea.setProducto(itemCarrito.getProducto());
-            linea.setCantidad(itemCarrito.getCantidad());
-            linea.setPrecioUnitario(itemCarrito.getPrecioUnitario());
-            linea.setPedido(pedido);
-            lineas.add(linea);
-        }
-
-        pedido.setLineas(lineas);
-        pedidoRepo.save(pedido);
+        // transformar items del carrito a ItemPedidoRequest.
+        List<ItemPedidoRequest> itemsCarrito = carrito.getItems().stream().map(i -> ItemPedidoRequest.builder()
+                .productoId(i.getProducto().getId_prod())
+                .cantidad(i.getCantidad())
+                .build()).toList();
+        // transformar el carrito a PedidoRequest (para que lo maneje PedidoService)
+        PedidoRequest pedidoRequest = PedidoRequest.builder()
+                .id_usuario(usuario.getId())
+                .items(itemsCarrito)
+                .build();
+        
+        // delegar la creacion del pedido al service de Pedido
+        pedidoService.crearPedido(pedidoRequest);
 
         // Vaciar carrito después del checkout
         carrito.getItems().clear();

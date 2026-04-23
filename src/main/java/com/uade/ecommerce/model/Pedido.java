@@ -29,6 +29,7 @@ public class Pedido {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private LocalDate fecha;
+    private Double precioTotal;
     
     @Enumerated(EnumType.STRING)
     private EstadoPedido estado;
