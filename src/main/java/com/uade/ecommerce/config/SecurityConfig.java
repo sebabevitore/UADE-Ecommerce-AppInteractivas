@@ -40,7 +40,6 @@ public class SecurityConfig {
   @Bean
   public UserDetailsService userDetailsService() {
     return username -> usuarioRepository.findByEmail(username)
-        //TODO: ssanchez - capturar con globalexceptionhanlder @ControllerAdivce
         .orElseThrow(() -> new UsernameNotFoundException("User not found"));
   }
 
@@ -106,13 +105,13 @@ public class SecurityConfig {
             //el controller /api/auth puede ser solicitado por cualquier usuario
             .requestMatchers("/api/auth/**").permitAll()
             //el endpoint /api/productos con metodo get es público, cualquiera puede ver los productos
-            //.requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll()
-            //.requestMatchers(HttpMethod.GET, "/api/categorias/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/categorias/**").permitAll()
             
             //gestion de productos: solo admin o vendedor
-            //.requestMatchers(HttpMethod.POST, "/api/productos/**").hasAnyRole("ADMIN", "VENDEDOR")
-            //.requestMatchers(HttpMethod.PUT, "/api/productos/**").hasAnyRole("ADMIN", "VENDEDOR")
-            //.requestMatchers(HttpMethod.DELETE, "/api/productos/**").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.POST, "/api/productos/**").hasAnyRole("ADMIN", "VENDEDOR")
+            .requestMatchers(HttpMethod.PUT, "/api/productos/**").hasAnyRole("ADMIN", "VENDEDOR")
+            .requestMatchers(HttpMethod.DELETE, "/api/productos/**").hasRole("ADMIN")
 
             // Rutas exclusivas para administradores
             // Gestión de categorías: Solo ADMIN
