@@ -41,6 +41,7 @@ public class ProductoService {
         producto.setNombre(request.getNombre());
         producto.setDescripcion(request.getDescripcion());
         producto.setPrecio(request.getPrecio());
+        producto.setStock(request.getStock());
         
         // BUSCAMOS LAS CATEGORÍAS POR ID
         if (request.getCategoriaIds() != null && !request.getCategoriaIds().isEmpty()) {
@@ -76,6 +77,7 @@ public class ProductoService {
         // 2. Mapeamos los datos del DTO a la Entidad
         productoExistente.setNombre(request.getNombre());
         productoExistente.setDescripcion(request.getDescripcion());
+        productoExistente.setStock(request.getStock());
         productoExistente.setPrecio(request.getPrecio());
         
         // 3. Guardamos y convertimos a respuesta
@@ -94,6 +96,7 @@ public class ProductoService {
                 .nombre(p.getNombre())
                 .descripcion(p.getDescripcion())
                 .precio(p.getPrecio())
+                .stock(p.getStock())
                 // Si la lista está vacía, devolvemos una lista con "Sin categoría" o vacía
                 .categorias(nombresCategorias.isEmpty() ? List.of("Sin categoría") : nombresCategorias)
                 .build();

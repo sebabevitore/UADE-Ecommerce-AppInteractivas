@@ -78,7 +78,7 @@ public class CarritoService {
 
         //revisar si hay stock suficiente
         if (!validarStock(p, request.getCantidad())) {
-            throw new CantidadInvalidaException("La cantidad a agregar no puede ser mayor al stock disponible. Stock actual: " + p.getCantidad() + ", cantidad a agregar: " + request.getCantidad());
+            throw new CantidadInvalidaException("La cantidad a agregar no puede ser mayor al stock disponible. Stock actual: " + p.getStock() + ", cantidad a agregar: " + request.getCantidad());
         }
         // buscar si el prod ya esta en el carrito
         ItemCarrito itemExistente = null;
@@ -152,7 +152,7 @@ public class CarritoService {
         }
 
         if (!validarStock(itemEncontrado.getProducto(), nuevaCantidad)) {
-            throw new CantidadInvalidaException("La cantidad solicitada excede el stock disponible. Stock actual: " + itemEncontrado.getProducto().getCantidad());
+            throw new CantidadInvalidaException("La cantidad solicitada excede el stock disponible. Stock actual: " + itemEncontrado.getProducto().getStock());
         }
 
         itemEncontrado.setCantidad(nuevaCantidad);
@@ -242,6 +242,6 @@ public class CarritoService {
     }
 
     private boolean validarStock (Producto producto, int cantidadSolicitada) {
-        return producto.getCantidad() >= cantidadSolicitada;
+        return producto.getStock() >= cantidadSolicitada;
     }
 }
