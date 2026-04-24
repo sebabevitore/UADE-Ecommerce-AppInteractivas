@@ -116,13 +116,13 @@ public class SecurityConfig {
 
             // Rutas exclusivas para administradores
             // Gestión de categorías: Solo ADMIN
-            .requestMatchers(HttpMethod.POST, "/api/categorias/**").hasRole(Role.ADMIN.name())
-            .requestMatchers(HttpMethod.DELETE, "/api/categorias/**").hasRole(Role.ADMIN.name())
+            .requestMatchers(HttpMethod.POST, "/api/categorias/**").hasAuthority(Role.ADMIN.name())
+            .requestMatchers(HttpMethod.DELETE, "/api/categorias/**").hasAuthority(Role.ADMIN.name())
 
-                        // Gestión de usuarios: Solo ADMIN
-                        .requestMatchers("/api/usuarios/**").hasRole(Role.ADMIN.name())
+            // Gestión de usuarios: Solo ADMIN
+            .requestMatchers("/api/usuarios/**").hasAuthority(Role.ADMIN.name())
             // verifica que el usuario esté autenticado y tenga el rol ADMIN
-            .requestMatchers("/api/admin/**").hasRole(Role.ADMIN.name())
+            .requestMatchers("/api/admin/**").hasAuthority(Role.ADMIN.name())
 
             // Carrito y Pedidos: Cualquier usuario AUTENTICADO (USER, VENDEDOR, ADMIN)
             .requestMatchers("/api/carrito/**", "/api/pedidos/**").authenticated()
