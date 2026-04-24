@@ -1,6 +1,5 @@
 package com.uade.ecommerce.service;
 
-import java.time.LocalDate;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -12,11 +11,13 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.uade.ecommerce.dto.UsuarioRegisterDTO;
-import com.uade.ecommerce.dto.LoginRequestDTO;
+import com.uade.ecommerce.dto.request.LoginRequest;
+import com.uade.ecommerce.dto.request.UsuarioRegisterDTO;
 import com.uade.ecommerce.exception.EmailException;
+import com.uade.ecommerce.model.Carrito;
 import com.uade.ecommerce.model.Role;
 import com.uade.ecommerce.model.Usuario;
+import com.uade.ecommerce.repository.CarritoRepository;
 import com.uade.ecommerce.repository.UsuarioRepository;
 import com.uade.ecommerce.security.JwtUtil;
 
@@ -27,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 @RequiredArgsConstructor
 public class AuthenticationService {
+    private final CarritoRepository carritoRepository; // porque al crear el usuario, se le va a crear un carrito vacio. 
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
@@ -69,7 +71,7 @@ public class AuthenticationService {
                 //      Solo administradores pueden asignar roles especiales (ADMIN, MODERATOR, etc.)
                 //      Esto sigue el principio de "least privilege" (menor nivel de privilegios)
                 .role(Role.USER)
-                .fechaNacimiento(LocalDate.parse(request.getFechaNacimiento()))
+                .fechaNacimiento(request.getFechaNacimiento())
                 .sexo(request.getSexo())
                 // 2.6) Finaliza la construcción y retorna la instancia Usuario 
                 //      con todos los campos configurados y listos para usar
@@ -77,6 +79,11 @@ public class AuthenticationService {
 
         // GUARDADO
         usuarioRepository.save(usuario);
+
+        // CREACIÓN DE CARRITO ASOCIADO AL USUARIO
+        Carrito carrito = new Carrito();
+        carrito.setUsuario(usuario);
+        carritoRepository.save(carrito);
 
         return "Usuario registrado exitosamente";
     }
@@ -106,7 +113,7 @@ public class AuthenticationService {
      * @throws NoSuchElementException si no se encuentra el usuario después de la autenticación exitosa
      */
 
-    public String authenticate(LoginRequestDTO request){
+    public String authenticate(LoginRequest request){
 
         // ==================== PASO 1: VALIDACIÓN DE CREDENCIALES ====================
         //esto guarda las credenciales para que las lea el AuthenticationManager

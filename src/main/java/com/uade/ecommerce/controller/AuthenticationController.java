@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.uade.ecommerce.dto.LoginRequestDTO;
-import com.uade.ecommerce.dto.UsuarioRegisterDTO;
+import com.uade.ecommerce.dto.request.LoginRequest;
+import com.uade.ecommerce.dto.request.UsuarioRegisterDTO;
 import com.uade.ecommerce.service.AuthenticationService;
 
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ public class AuthenticationController {
 
     //http://localhost:8080/api/auth/login con metodo post http, enviar un body -> loguear un usuario
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequestDTO request) {
+    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
         return ResponseEntity.ok(authenticationService.authenticate(request));
     }
 
