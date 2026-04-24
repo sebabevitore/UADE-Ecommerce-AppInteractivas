@@ -45,7 +45,12 @@ public class PedidoService {
 //    }
 
     public List<PedidoResponse> getPedidos() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Usuario usuario = usuarioRepo.findByEmail(email)
+                .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado con email: " + email));
+
         return repo.findAll().stream()
+                .filter(pedido -> pedido.getUsuario().equals(usuario))
                 .map(this::convertToPedidoDTO) // Transformamos cada Pedido en PedidoResponse
                 .toList();
     }
