@@ -1,12 +1,9 @@
 package com.uade.ecommerce.service;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
 import com.uade.ecommerce.dto.request.ItemCarritoRequest;
 import com.uade.ecommerce.dto.request.ItemPedidoRequest;
 import com.uade.ecommerce.dto.request.PedidoRequest;
@@ -20,12 +17,9 @@ import com.uade.ecommerce.exception.ProductoNotFoundException;
 import com.uade.ecommerce.exception.UsuarioNotFoundException;
 import com.uade.ecommerce.model.Carrito;
 import com.uade.ecommerce.model.ItemCarrito;
-import com.uade.ecommerce.model.LineaPedido;
-import com.uade.ecommerce.model.Pedido;
 import com.uade.ecommerce.model.Producto;
 import com.uade.ecommerce.model.Usuario;
 import com.uade.ecommerce.repository.CarritoRepository;
-import com.uade.ecommerce.repository.PedidoRepository;
 import com.uade.ecommerce.repository.ProductoRepository;
 import com.uade.ecommerce.repository.UsuarioRepository;
 
@@ -39,8 +33,6 @@ public class CarritoService {
     private ProductoRepository productoRepo;
     @Autowired
     private UsuarioRepository usuarioRepo;
-    @Autowired
-    private PedidoRepository pedidoRepo;
     @Autowired
     private PedidoService pedidoService;
 
@@ -84,6 +76,10 @@ public class CarritoService {
         Producto p = productoRepo.findById(request.getId_producto())
                     .orElseThrow(() -> new ProductoNotFoundException(request.getId_producto()));
 
+        //revisar si hay stock suficiente
+        if (!validarStock(p, request.getCantidad())) {
+            throw new CantidadInvalidaException("La cantidad a agregar no puede ser mayor al stock disponible. Stock actual: " + p.getCantidad() + ", cantidad a agregar: " + request.getCantidad());
+        }
         // buscar si el prod ya esta en el carrito
         ItemCarrito itemExistente = null;
         List<ItemCarrito> items = carrito.getItems();
@@ -94,11 +90,16 @@ public class CarritoService {
                 break; // Salir del loop una vez encontrado
             }
         }
+
         if(itemExistente != null) {
             // si ya esta, se actualiza la cantidad y el precio unitario
+            // primero validar si la cantidad total (actual + nueva) no supera el stock disponible
+            int cantidadTotal = itemExistente.getCantidad() + request.getCantidad();
+            if(!validarStock(p, cantidadTotal)) {
+                throw new CantidadInvalidaException("La cantidad total del producto en el carrito debe ser mayor a 0. Cantidad actual: " + itemExistente.getCantidad() + ", cantidad a agregar: " + request.getCantidad());
+            }
             itemExistente.setCantidad(itemExistente.getCantidad() + request.getCantidad());
             itemExistente.setPrecioUnitario(p.getPrecio()); // Usar precio actual del producto
-
         } else {
             // si no lo encuentra, se crea un nuevo item carrito
             itemExistente = ItemCarrito.builder()
@@ -148,6 +149,10 @@ public class CarritoService {
 
         if (itemEncontrado == null) {
             throw new ItemCarritoNotFoundException(itemId);
+        }
+
+        if (!validarStock(itemEncontrado.getProducto(), nuevaCantidad)) {
+            throw new CantidadInvalidaException("La cantidad solicitada excede el stock disponible. Stock actual: " + itemEncontrado.getProducto().getCantidad());
         }
 
         itemEncontrado.setCantidad(nuevaCantidad);
@@ -234,5 +239,9 @@ public class CarritoService {
                 .total(carrito.getItems().stream()
                         .mapToDouble(i -> i.getCantidad() * i.getPrecioUnitario()).sum())
                 .build();
+    }
+
+    private boolean validarStock (Producto producto, int cantidadSolicitada) {
+        return producto.getCantidad() >= cantidadSolicitada;
     }
 }
