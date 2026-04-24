@@ -109,19 +109,19 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.GET, "/api/categorias/**").permitAll()
             
             //gestion de productos: solo admin o vendedor
-            .requestMatchers(HttpMethod.POST, "/api/productos/**").hasAnyRole("ADMIN", "VENDEDOR")
-            .requestMatchers(HttpMethod.PUT, "/api/productos/**").hasAnyRole("ADMIN", "VENDEDOR")
-            .requestMatchers(HttpMethod.DELETE, "/api/productos/**").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.POST, "/api/productos/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_VENDEDOR")
+            .requestMatchers(HttpMethod.PUT, "/api/productos/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_VENDEDOR")
+            .requestMatchers(HttpMethod.DELETE, "/api/productos/**").hasAuthority("ROLE_ADMIN")
 
             // Rutas exclusivas para administradores
             // Gestión de categorías: Solo ADMIN
-            .requestMatchers(HttpMethod.POST, "/api/categorias/**").hasAuthority(Role.ADMIN.name())
-            .requestMatchers(HttpMethod.DELETE, "/api/categorias/**").hasAuthority(Role.ADMIN.name())
+            .requestMatchers(HttpMethod.POST, "/api/categorias/**").hasAuthority("ROLE_ADMIN")
+            .requestMatchers(HttpMethod.DELETE, "/api/categorias/**").hasAuthority("ROLE_ADMIN")
 
             // Gestión de usuarios: Solo ADMIN
-            .requestMatchers("/api/usuarios/**").hasAuthority(Role.ADMIN.name())
+            .requestMatchers("/api/usuarios/**").hasAuthority("ROLE_ADMIN")
             // verifica que el usuario esté autenticado y tenga el rol ADMIN
-            .requestMatchers("/api/admin/**").hasAuthority(Role.ADMIN.name())
+            .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
 
             // Carrito y Pedidos: Cualquier usuario AUTENTICADO (USER, VENDEDOR, ADMIN)
             .requestMatchers("/api/carrito/**", "/api/pedidos/**").authenticated()
