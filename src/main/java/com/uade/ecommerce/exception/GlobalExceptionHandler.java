@@ -67,12 +67,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> manejarCarritoVacio(CarritoVacioException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
-
+    //uando el usuario ingresa un número menor o igual a cero
     @ExceptionHandler(CantidadInvalidaException.class)
     public ResponseEntity<String> manejarCantidadInvalida(CantidadInvalidaException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
-
+    //cuando no hay stock suficiente del producto
     @ExceptionHandler(StockInsuficienteException.class)
     public ResponseEntity<String> manejarStockInsuficiente(StockInsuficienteException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
