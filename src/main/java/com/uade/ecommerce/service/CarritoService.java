@@ -73,8 +73,8 @@ public class CarritoService {
         }
 
         //buscar producto
-        Producto p = productoRepo.findById(request.getId_producto())
-                    .orElseThrow(() -> new ProductoNotFoundException(request.getId_producto()));
+        Producto p = productoRepo.findById(request.getIdProducto())
+                    .orElseThrow(() -> new ProductoNotFoundException(request.getIdProducto()));
 
         //revisar si hay stock suficiente
         if (!validarStock(p, request.getCantidad())) {
@@ -85,7 +85,7 @@ public class CarritoService {
         List<ItemCarrito> items = carrito.getItems();
         for(ItemCarrito item : items) {
             // se los compara por ID
-            if(item.getProducto().getId_prod().equals(request.getId_producto())) {
+            if(item.getProducto().getId_prod().equals(request.getIdProducto())) {
                 itemExistente = item;
                 break; // Salir del loop una vez encontrado
             }
