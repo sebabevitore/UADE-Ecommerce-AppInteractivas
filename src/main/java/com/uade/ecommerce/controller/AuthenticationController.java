@@ -10,10 +10,6 @@ import com.uade.ecommerce.dto.request.LoginRequest;
 import com.uade.ecommerce.dto.request.UsuarioRegisterDTO;
 import com.uade.ecommerce.service.AuthenticationService;
 
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
-
-
 import lombok.RequiredArgsConstructor;
 
 
@@ -32,22 +28,9 @@ public class AuthenticationController {
 
     //http://localhost:8080/api/auth/login con metodo post http, enviar un body -> loguear un usuario
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest request, HttpServletResponse response) {
-
-        String token = authenticationService.authenticate(request);
-
-        // 2. Creamos la cookie HTTP-Only con ese token
-        Cookie cookie = new Cookie("token", token);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(false); // Poner en true solo en producción (con HTTPS)
-        cookie.setPath("/"); // Disponible para todo el dominio
-        cookie.setDomain("localhost");   
-        cookie.setMaxAge(24 * 60 * 60); // Duración de 1 día (en segundos)
-
-        // 3. Añadimos la cookie a la respuesta HTTP
-        response.addCookie(cookie);
-
-        // 4. Respondemos con un mensaje de éxito. Ya NO mandamos el token en el body.
-        return ResponseEntity.ok("Login exitoso. Cookie establecida.");
+    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authenticationService.authenticate(request));
     }
+
+    
 }
