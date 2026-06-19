@@ -105,6 +105,13 @@ public class SecurityConfig {
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .csrf(csrf -> csrf.disable())
         
+        .headers(headers -> headers
+            .contentSecurityPolicy(csp -> csp
+                // Esta directiva dice: "Solo acepta scripts e imágenes de mi propio dominio ('self')"
+                .policyDirectives("default-src 'self'; script-src 'self'; frame-ancestors 'none';")
+            )
+        )
+
         .authorizeHttpRequests(auth -> auth
             // Rutas públicas que no requieren autenticación
             //el controller /api/auth puede ser solicitado por cualquier usuario
