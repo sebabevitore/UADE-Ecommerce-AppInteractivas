@@ -128,8 +128,8 @@ public class SecurityConfig {
             // verifica que el usuario esté autenticado y tenga el rol ADMIN
             .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
 
-            // Carrito, pedidos, favoritos: Cualquier usuario AUTENTICADO (USER, VENDEDOR, ADMIN)
-            .requestMatchers("/api/carrito/**", "/api/pedidos/**", "/api/favoritos/**").authenticated()
+            // Carrito y Pedidos: Cualquier usuario AUTENTICADO (USER, VENDEDOR, ADMIN)
+            .requestMatchers("/api/carrito/**", "/api/pedidos/**").authenticated()
 
             // Cualquier otra ruta requiere autenticación
             // con esta linea abarca requiere que todos los endpoints esten autenticados
