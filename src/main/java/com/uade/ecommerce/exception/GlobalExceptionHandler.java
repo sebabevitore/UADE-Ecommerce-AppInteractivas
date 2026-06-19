@@ -1,6 +1,5 @@
 package com.uade.ecommerce.exception;
 
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -67,19 +66,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> manejarCarritoVacio(CarritoVacioException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
-    //uando el usuario ingresa un número menor o igual a cero
+
     @ExceptionHandler(CantidadInvalidaException.class)
     public ResponseEntity<String> manejarCantidadInvalida(CantidadInvalidaException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-    }
-    //cuando no hay stock suficiente del producto
-    @ExceptionHandler(StockInsuficienteException.class)
-    public ResponseEntity<String> manejarStockInsuficiente(StockInsuficienteException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
-    }
-    //PARA DATOS DUPLICADOS(EMAIL REPETIDO, NOMBRE DE PRODUCTO REPETIDO, ETC)
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<String> manejarDuplicados(DataIntegrityViolationException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body("El recurso ya existe o viola una restricción de integridad.");
     }
 }
