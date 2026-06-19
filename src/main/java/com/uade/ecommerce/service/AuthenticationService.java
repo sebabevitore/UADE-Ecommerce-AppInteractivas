@@ -15,9 +15,11 @@ import com.uade.ecommerce.dto.request.LoginRequest;
 import com.uade.ecommerce.dto.request.UsuarioRegisterDTO;
 import com.uade.ecommerce.exception.EmailException;
 import com.uade.ecommerce.model.Carrito;
+import com.uade.ecommerce.model.Favorito;
 import com.uade.ecommerce.model.Role;
 import com.uade.ecommerce.model.Usuario;
 import com.uade.ecommerce.repository.CarritoRepository;
+import com.uade.ecommerce.repository.FavoritoRepository;
 import com.uade.ecommerce.repository.UsuarioRepository;
 import com.uade.ecommerce.security.JwtUtil;
 
@@ -32,6 +34,7 @@ public class AuthenticationService {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final FavoritoRepository favoritoRepository;
     private final JwtUtil jwtUtil;
     
     public String register(UsuarioRegisterDTO request) {
@@ -84,6 +87,11 @@ public class AuthenticationService {
         Carrito carrito = new Carrito();
         carrito.setUsuario(usuario);
         carritoRepository.save(carrito);
+
+        // CREACIÓN DE FAVORITO ASOCIADO AL USUARIO
+        Favorito favorito = new Favorito();
+        favorito.setUsuario(usuario);
+        favoritoRepository.save(favorito);
 
         return "Usuario registrado exitosamente";
     }

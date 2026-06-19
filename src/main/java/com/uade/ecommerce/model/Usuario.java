@@ -54,6 +54,9 @@ public class Usuario implements UserDetails{
     @OneToOne(mappedBy = "usuario")
     private Carrito carrito;
 
+    @OneToOne(mappedBy = "usuario")
+    private Favorito favorito;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + (role != null ? role.name() : "USER")));

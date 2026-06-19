@@ -213,6 +213,8 @@ public class CarritoService {
                 .items(carrito.getItems().stream().map(i -> ItemCarritoResponse.builder()
                         .id(i.getId())
                         .id_producto(i.getProducto().getId_prod())
+                        .nombreProducto(i.getProducto().getNombre()) 
+                        .imagenUrl(i.getProducto().getImagenUrl())
                         .cantidad(i.getCantidad())
                         .precioUnitario(i.getPrecioUnitario())
                         .build()).toList())
