@@ -2,7 +2,7 @@ package com.uade.ecommerce.service;
 
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
+
 import org.springframework.stereotype.Service;
 import com.uade.ecommerce.dto.request.ItemCarritoRequest;
 import com.uade.ecommerce.dto.request.ItemPedidoRequest;
@@ -14,6 +14,7 @@ import com.uade.ecommerce.exception.CarritoNotFoundException;
 import com.uade.ecommerce.exception.CarritoVacioException;
 import com.uade.ecommerce.exception.ItemCarritoNotFoundException;
 import com.uade.ecommerce.exception.ProductoNotFoundException;
+import com.uade.ecommerce.exception.StockInsuficienteException;
 import com.uade.ecommerce.exception.UsuarioNotFoundException;
 import com.uade.ecommerce.model.Carrito;
 import com.uade.ecommerce.model.ItemCarrito;
@@ -36,109 +37,90 @@ public class CarritoService {
     @Autowired
     private PedidoService pedidoService;
 
-    // Obtener usuario autenticado desde el contexto de seguridad
-    private Usuario getUsuarioAutenticado() {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        return usuarioRepo.findByEmail(email)
-                .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado"));
-    }
 
-    // Obtener carrito del usuario autenticado
-    @Transactional
-    public CarritoResponse getCarritoByUsuario() {
-        Usuario usuario = getUsuarioAutenticado();
+    private Carrito obtenerCarritoValidado(String emailUsuario) {
+        Usuario usuario = usuarioRepo.findByEmail(emailUsuario)
+                .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado"));
+                
         Carrito carrito = usuario.getCarrito();
         if (carrito == null) {
             throw new CarritoNotFoundException("Carrito no encontrado para el usuario");
         }
+        return carrito;
+    }
+
+    @Transactional
+    public CarritoResponse getCarritoByUsuario(String emailUsuario) {
+        Carrito carrito = obtenerCarritoValidado(emailUsuario);
         return convertToCarritoResponse(carrito);
     }
-
     //no va a tener creacion de carrito porque se crea desde la creacion de usuario.
 
+
+    //agregar items al carrito
     @Transactional
-    // logica para agregar item al carrito del usuario autenticado
-    public CarritoResponse addItemToCart(ItemCarritoRequest request)  {
-
-        // 1. VALIDAR CANTIDAD (Nueva validación)
+    public CarritoResponse addItemToCart(ItemCarritoRequest request, String emailUsuario) {
+        
+        //1. valida cantidad
         if (request.getCantidad() <= 0) {
-            throw new CantidadInvalidaException("La cantidad a agregar debe ser mayor a 0. Se recibió: " + request.getCantidad());
+            throw new CantidadInvalidaException("La cantidad debe ser mayor a 0");
         }
 
-        //obtener usuario autenticado y su carrito
-        Usuario usuario = getUsuarioAutenticado();
-        Carrito carrito = usuario.getCarrito();
-        if (carrito == null) {
-            throw new CarritoNotFoundException("Carrito no encontrado para el usuario");
-        }
+        Carrito carrito = obtenerCarritoValidado(emailUsuario);
 
-        //buscar producto
-        Producto p = productoRepo.findById(request.getId_producto())
-                    .orElseThrow(() -> new ProductoNotFoundException(request.getId_producto()));
+        //busca producto
+        Producto p = productoRepo.findById(request.getIdProducto())
+                    .orElseThrow(() -> new ProductoNotFoundException(request.getIdProducto()));
 
-        //revisar si hay stock suficiente
+        //valida que haya stock para vender
         if (!validarStock(p, request.getCantidad())) {
-            throw new CantidadInvalidaException("La cantidad a agregar no puede ser mayor al stock disponible. Stock actual: " + p.getStock() + ", cantidad a agregar: " + request.getCantidad());
+            throw new CantidadInvalidaException("Stock insuficiente para agregar esta cantidad.");
         }
-        // buscar si el prod ya esta en el carrito
+
         ItemCarrito itemExistente = null;
-        List<ItemCarrito> items = carrito.getItems();
-        for(ItemCarrito item : items) {
-            // se los compara por ID
-            if(item.getProducto().getId_prod().equals(request.getId_producto())) {
+        for(ItemCarrito item : carrito.getItems()) {
+            if(item.getProducto().getId_prod().equals(request.getIdProducto())) {
                 itemExistente = item;
-                break; // Salir del loop una vez encontrado
+                break;
             }
         }
 
         if(itemExistente != null) {
-            // si ya esta, se actualiza la cantidad y el precio unitario
-            // primero validar si la cantidad total (actual + nueva) no supera el stock disponible
             int cantidadTotal = itemExistente.getCantidad() + request.getCantidad();
             if(!validarStock(p, cantidadTotal)) {
-                throw new CantidadInvalidaException("La cantidad total del producto en el carrito debe ser mayor a 0. Cantidad actual: " + itemExistente.getCantidad() + ", cantidad a agregar: " + request.getCantidad());
+                throw new StockInsuficienteException("La cantidad total en el carrito supera el stock disponible.");
             }
-            itemExistente.setCantidad(itemExistente.getCantidad() + request.getCantidad());
-            itemExistente.setPrecioUnitario(p.getPrecio()); // Usar precio actual del producto
+            itemExistente.setCantidad(cantidadTotal);
+            itemExistente.setPrecioUnitario(p.getPrecio()); 
         } else {
-            // si no lo encuentra, se crea un nuevo item carrito
             itemExistente = ItemCarrito.builder()
                 .producto(p)
                 .cantidad(request.getCantidad())
-                .precioUnitario(p.getPrecio())  // Usar precio actual del producto
+                .precioUnitario(p.getPrecio()) 
                 .carrito(carrito)
                 .build();
-
-            // se agrega el nuevo item a la lista de items del carrito
-            items.add(itemExistente);
+            carrito.getItems().add(itemExistente);
         }
-        // se guarda el carrito con el nuevo item o la cantidad actualizada
+
         carritoRepo.save(carrito);
-
-        // crear y retornar la respuesta
         return convertToCarritoResponse(carrito);
-
     }
-    
+
 
     // Actualizar cantidad de un item en el carrito
     @Transactional
-    public CarritoResponse updateItemQuantity(Long itemId, int nuevaCantidad) {
-        ItemCarrito item = new ItemCarrito();
-        item.setId(itemId);
+    public CarritoResponse updateItemQuantity(Long itemId, int nuevaCantidad, String emailUsuario) {
         
-        // Validar que la cantidad sea mayor a 0
+        // 1. Validar que la cantidad sea lógica
         if (nuevaCantidad <= 0) {
             throw new CantidadInvalidaException("La cantidad debe ser mayor a 0");
         }
 
-        // Buscar el item en la BD
+        // 2. Obtener el carrito usando tu Helper y el email que viene por parámetro
+        Carrito carrito = obtenerCarritoValidado(emailUsuario);
+
+        // 3. Declarar la variable ANTES de buscarla
         ItemCarrito itemEncontrado = null;
-        Usuario usuario = getUsuarioAutenticado();
-        Carrito carrito = usuario.getCarrito();
-        if (carrito == null) {
-            throw new CarritoNotFoundException("Carrito no encontrado para el usuario");
-        }
 
         for (ItemCarrito it : carrito.getItems()) {
             if (it.getId().equals(itemId)) {
@@ -147,28 +129,35 @@ public class CarritoService {
             }
         }
 
+        // 4. Validar si el item realmente estaba en el carrito
         if (itemEncontrado == null) {
             throw new ItemCarritoNotFoundException(itemId);
         }
 
+        // 5. Validar el stock (Nota: Usamos tu excepción específica de stock)
         if (!validarStock(itemEncontrado.getProducto(), nuevaCantidad)) {
-            throw new CantidadInvalidaException("La cantidad solicitada excede el stock disponible. Stock actual: " + itemEncontrado.getProducto().getStock());
+            throw new StockInsuficienteException("La cantidad solicitada excede el stock disponible. Stock actual: " + itemEncontrado.getProducto().getStock());
         }
 
+        // 6. Actualizar, guardar y retornar
         itemEncontrado.setCantidad(nuevaCantidad);
         carritoRepo.save(carrito);
 
         return convertToCarritoResponse(carrito);
     }
 
+    // Vaciar carrito (Manual, sin comprar)
+    @Transactional
+    public void clearCart(String emailUsuario) {
+        Carrito carrito = obtenerCarritoValidado(emailUsuario);
+        carrito.getItems().clear();
+        carritoRepo.save(carrito);
+    }
+
     // Remover un item del carrito
     @Transactional
-    public CarritoResponse removeItemFromCart(Long itemId) {
-        Usuario usuario = getUsuarioAutenticado();
-        Carrito carrito = usuario.getCarrito();
-        if (carrito == null) {
-            throw new CarritoNotFoundException("Carrito no encontrado para el usuario");
-        }
+    public CarritoResponse removeItemFromCart(Long itemId, String emailUsuario) {
+        Carrito carrito = obtenerCarritoValidado(emailUsuario);
 
         ItemCarrito itemAEliminar = carrito.getItems().stream()
                 .filter(item -> item.getId().equals(itemId))
@@ -180,49 +169,40 @@ public class CarritoService {
 
         return convertToCarritoResponse(carrito);
     }
-
-    // Vaciar carrito
+    
+    //checkout del carrito
     @Transactional
-    public void clearCart() {
-        Usuario usuario = getUsuarioAutenticado();
-        Carrito carrito = usuario.getCarrito();
-        if (carrito == null) {
-            throw new CarritoNotFoundException("Carrito no encontrado para el usuario");
-        }
-
-        carrito.getItems().clear();
-        carritoRepo.save(carrito);
-    }
-
-    // Checkout: convertir carrito a pedido
-    @Transactional
-    public void checkoutCarrito() {
-        Usuario usuario = getUsuarioAutenticado();
-        Carrito carrito = usuario.getCarrito();
-        if (carrito == null) {
-            throw new CarritoNotFoundException("Carrito no encontrado para el usuario");
-        }
+    public void checkoutCarrito(String emailUsuario) {
+        // 3. USO DEL HELPER NUEVAMENTE
+        Carrito carrito = obtenerCarritoValidado(emailUsuario);
 
         if (carrito.getItems().isEmpty()) {
             throw new CarritoVacioException();
         }
 
+        // validar que haya stock de todo antes de comprar
+        for (ItemCarrito item : carrito.getItems()) {
+            if (!validarStock(item.getProducto(), item.getCantidad())) {
+                throw new StockInsuficienteException(
+                    "Stock insuficiente para el producto: " + item.getProducto().getNombre() + 
+                    ". Disponible: " + item.getProducto().getStock()
+                );
+            }
+        }
 
-        // transformar items del carrito a ItemPedidoRequest.
-        List<ItemPedidoRequest> itemsCarrito = carrito.getItems().stream().map(i -> ItemPedidoRequest.builder()
+        List<ItemPedidoRequest> itemsCarrito = carrito.getItems().stream()
+                .map(i -> ItemPedidoRequest.builder()
                 .productoId(i.getProducto().getId_prod())
                 .cantidad(i.getCantidad())
                 .build()).toList();
-        // transformar el carrito a PedidoRequest (para que lo maneje PedidoService)
+                
         PedidoRequest pedidoRequest = PedidoRequest.builder()
-                .id_usuario(usuario.getId())
+                .id_usuario(carrito.getUsuario().getId())
                 .items(itemsCarrito)
                 .build();
         
-        // delegar la creacion del pedido al service de Pedido
         pedidoService.crearPedido(pedidoRequest);
 
-        // Vaciar carrito después del checkout
         carrito.getItems().clear();
         carritoRepo.save(carrito);
     }
@@ -233,6 +213,8 @@ public class CarritoService {
                 .items(carrito.getItems().stream().map(i -> ItemCarritoResponse.builder()
                         .id(i.getId())
                         .id_producto(i.getProducto().getId_prod())
+                        .nombreProducto(i.getProducto().getNombre()) 
+                        .imagenUrl(i.getProducto().getImagenUrl())
                         .cantidad(i.getCantidad())
                         .precioUnitario(i.getPrecioUnitario())
                         .build()).toList())

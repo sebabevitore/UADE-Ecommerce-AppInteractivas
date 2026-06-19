@@ -11,6 +11,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Cookie;
 import java.io.IOException;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,27 +32,35 @@ public class JwtFilter extends OncePerRequestFilter {
     
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        // 1. Obtiene el encabezado "Authorization" de la petición.
-        // en header se almacen esto ej: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJycGVyZXpAZ21haWwuY29tIiwicm9sZXMiOiJST0xFX1VTRVIiLCJpYXQiOjE3NjEwMDc4MzIsImV4cCI6MTc2MTA5NDIzMn0.FcLd28t-inYFaz7Sbe4slGBafJoqZtChCszmsckCLB
-        String header = request.getHeader("Authorization");
+        String token = null;
 
-        // 2. Verifica si el encabezado existe y si comienza con "Bearer ".
-        if (header != null && header.startsWith("Bearer ")) {
-            //extrae la parte del JWT de la cabecera de autorización, eliminando el prefijo "Bearer ".
-            // ej token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJycGVyZXpAZ21haWwuY29tIiwicm9sZXMiOiJST0xFX1VTRVIiLCJpYXQiOjE3NjEwMDc4MzIsImV4cCI6MTc2MTA5NDIzMn0.FcLd28t-inYFaz7Sbe4slGBafJoqZtChCszmsckCLBU
-            String token = header.substring(7);
-            // 4. Valida el token usando `jwtUtil.validateToken()`.
+        // 1. INTENTAR BUSCAR EL TOKEN EN LAS COOKIES (Nueva estrategia Avanzada)
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("token".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        // 2. RESPALDO: Si no estaba en la cookie, intentamos buscarlo en el Header tradicional
+        if (token == null) {
+            String header = request.getHeader("Authorization");
+            if (header != null && header.startsWith("Bearer ")) {
+                token = header.substring(7);
+            }
+        }
+
+        // 3. SI ENCONTRAMOS EL TOKEN (ya sea por Cookie o por Header), VALIDAMOS
+        if (token != null) {
             if (jwtUtil.validateToken(token)) {
-                // 5. Si el token es válido, extrae el nombre de usuario y los roles del token.
                 String username = jwtUtil.getUsername(token);
                 Set<String> roles = jwtUtil.getRoles(token);
 
-                // transformar el conjunto de roles (cadenas de texto)  en la lista de autoridades (permisos) que Spring Security necesita para verificar si el usuario tiene acceso a un recurso.
                 var authorities = roles.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
-                // usuario ya autenticado 
-                // crea un objeto de autenticación con los detalles del usuario y sus roles
                 var auth = new UsernamePasswordAuthenticationToken(username, null, authorities);
-                // 8. Finalmente, pasa la petición al siguiente filtro en la cadena.
+                
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
         }
