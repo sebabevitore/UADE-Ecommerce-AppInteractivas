@@ -235,6 +235,8 @@ public class CarritoService {
                         .id_producto(i.getProducto().getId_prod())
                         .cantidad(i.getCantidad())
                         .precioUnitario(i.getPrecioUnitario())
+                        .nombreProducto(i.getProducto().getNombre())
+                        // .imagen(i.getProducto().getImagen())
                         .build()).toList())
                 .total(carrito.getItems().stream()
                         .mapToDouble(i -> i.getCantidad() * i.getPrecioUnitario()).sum())

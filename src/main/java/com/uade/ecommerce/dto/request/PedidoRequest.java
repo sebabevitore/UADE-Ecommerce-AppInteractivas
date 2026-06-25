@@ -4,12 +4,14 @@ import java.util.List;
 
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
-@Getter @Setter
+@NoArgsConstructor
 @Data
 @Builder
+@AllArgsConstructor
 public class PedidoRequest {
     private Long id_usuario;
     private List<ItemPedidoRequest> items;

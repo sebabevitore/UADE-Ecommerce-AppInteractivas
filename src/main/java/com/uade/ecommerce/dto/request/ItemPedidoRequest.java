@@ -1,11 +1,15 @@
 package com.uade.ecommerce.dto.request;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-public class ItemPedidoRequest { // DTO para cada item del pedido
-    private Long productoId; // ID del producto
-    private int cantidad; // Cantidad del producto a comprar
+@NoArgsConstructor 
+@AllArgsConstructor 
+public class ItemPedidoRequest { 
+    private Long productoId; 
+    private int cantidad; 
 }

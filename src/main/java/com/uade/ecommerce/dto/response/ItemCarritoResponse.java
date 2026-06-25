@@ -10,5 +10,7 @@ public class ItemCarritoResponse {
     private Long id_producto;
     private int cantidad;
     private double precioUnitario;
+    private String nombreProducto;
+    private String imagen;
     
 }
