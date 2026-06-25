@@ -71,4 +71,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> manejarCantidadInvalida(CantidadInvalidaException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
+
+    @ExceptionHandler(FavoriteNotFoundException.class)
+    public ResponseEntity<String> manejarFavoritoNoEncontrado(FavoriteNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
 }
