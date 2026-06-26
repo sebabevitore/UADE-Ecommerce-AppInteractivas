@@ -17,7 +17,13 @@ public class UsuarioService {
 
 //    public List<Usuario> getUsuarios() {
 //        return repo.findAll();
-//    }    
+//    }
+    public UsuarioRegisterDTO getUsuarioPorEmail(String email) {
+        Usuario usuario = repo.findByEmail(email)
+            .orElseThrow(() -> new UsuarioNotFoundException("Usuario no encontrado con email: " + email));
+
+        return convertToDTO(usuario);
+    }    
 
     public List<UsuarioRegisterDTO> getUsuarios() {
         return repo.findAll().stream()

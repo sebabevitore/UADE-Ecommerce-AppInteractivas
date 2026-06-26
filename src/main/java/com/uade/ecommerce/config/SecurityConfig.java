@@ -129,7 +129,8 @@ public class SecurityConfig {
             // Gestión de categorías: Solo ADMIN
             .requestMatchers(HttpMethod.POST, "/api/categorias/**").hasAuthority("ROLE_ADMIN")
             .requestMatchers(HttpMethod.DELETE, "/api/categorias/**").hasAuthority("ROLE_ADMIN")
-
+            // Mi cuenta: usuario autenticado
+            .requestMatchers(HttpMethod.GET, "/api/usuarios/me").authenticated()
             // Gestión de usuarios: Solo ADMIN
             .requestMatchers("/api/usuarios/**").hasAuthority("ROLE_ADMIN")
             // verifica que el usuario esté autenticado y tenga el rol ADMIN
