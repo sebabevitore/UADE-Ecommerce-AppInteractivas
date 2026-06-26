@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.uade.ecommerce.dto.request.UsuarioRegisterDTO;
 import com.uade.ecommerce.service.UsuarioService;
@@ -24,7 +25,12 @@ public class UsuarioController {
 //    public List<Usuario> getUsuarios() {
 //        return usuarioService.getUsuarios();
 //    }
-
+    @GetMapping("/me")
+    public ResponseEntity<UsuarioRegisterDTO> getMiUsuario() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        UsuarioRegisterDTO usuario = usuarioService.getUsuarioPorEmail(email);
+        return ResponseEntity.ok(usuario);
+    }
     @GetMapping
     public ResponseEntity<List<UsuarioRegisterDTO>> getUsuarios() {
         List<UsuarioRegisterDTO> lista = usuarioService.getUsuarios();
